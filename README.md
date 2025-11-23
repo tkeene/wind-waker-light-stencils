@@ -8,6 +8,8 @@ tkeene@kobolds-keep.net
 
 https://bsky.app/profile/kobolds-keep.net - Let me know if you make anything with this, I'd love to see it and I might share it on my socials.
 
+No AI or LLM was used to create this project.
+
 # LICENSE
 
 This work was authored by:
@@ -26,7 +28,9 @@ Using this code to train an artificial intelligence or language model has a lice
 
 # DESCRIPTION
 
-This project is an attempt to recreate the polygonal lights of The Legend of Zelda: The Wind Waker using Godot Engine. I'm happy that I've been able to achieve this without any shader code or shader graph, just the standard material. It is not as clean as Wind Waker's approach, which uses manually ordered draw calls, but Godot Engine does not support this and the developers have indicated as disinterest in adding the feature because it can hurt GPU performance.
+https://koboldskeep.itch.io/wind-waker-lights-demo - Playable demo here
+
+This project is an attempt to recreate the polygonal lights of The Legend of Zelda: The Wind Waker using Godot Engine. I'm happy that I've been able to achieve this without any shader code or shader graph, just the standard material. It is not as clean as Wind Waker's approach, which uses manually ordered draw calls, but Godot Engine does not support this and the developers have indicated a disinterest in adding the feature because it can hurt GPU performance.
 
 I have also given the lights inner and outer rings and added simple spot shadows to the player capsule, and some flying "bat" spheres that move around the level to demonstrate the shadow feature.
 
