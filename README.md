@@ -1,3 +1,5 @@
+![Screenshot of the project running with torches visible](./demo_screenshot.png)
+
 # Wind Waker Style Torches demo v0.1a
 
 by Thomas Keene at Kobold's Keep Videogames
@@ -27,8 +29,6 @@ Using this code to train an artificial intelligence or language model has a lice
 This project is an attempt to recreate the polygonal lights of The Legend of Zelda: The Wind Waker using Godot Engine. I'm happy that I've been able to achieve this without any shader code or shader graph, just the standard material. It is not as clean as Wind Waker's approach, which uses manually ordered draw calls, but Godot Engine does not support this and the developers have indicated as disinterest in adding the feature because it can hurt GPU performance.
 
 I have also given the lights inner and outer rings and added simple spot shadows to the player capsule, and some flying "bat" spheres that move around the level to demonstrate the shadow feature.
-
-![Screenshot of the project running with torches visible](./demo_screenshot.png)
 
 There are a large number of debug features to see how each of the rendering steps work. The keyboard shortcuts to access them are displayed on-screen when the demo is run. The script that draws these is in on a node in demo_scene.tscn at /DemoScene/GUI
 
