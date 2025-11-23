@@ -46,7 +46,7 @@ https://youtu.be/f1sUPUGu9iw - A Deeper Dive into Wind Waker's Lighting
 
 # WHY DIDN'T YOU USE THE RENDER PRIORITY FIELD?
 
-Because that would limit the maximum number of renderers in the scene to 256. It also causes problems for other graphical effects that rely on Render Priority. If you are using this for both light sources and character shadows, you could quickly run out of slots for the renderers.
+Because that would limit the maximum number of renderers in the scene to 256 (or more practically to 85). It also causes problems for other graphical effects that rely on Render Priority. If you are using this for both light sources and character shadows, you could quickly run out of slots for the renderers.
 
 A future version of Godot, or a fork with the necessary features, may make this project obsolete. It may also be possible to achieve this effect with some sophisticated shader code. I look forward to it! Please let me know when that happens!
 
