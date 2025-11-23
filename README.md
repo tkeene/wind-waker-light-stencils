@@ -4,7 +4,7 @@ by Thomas Keene at Kobold's Keep Videogames
 
 tkeene@kobolds-keep.net
 
-https://bsky.app/profile/kobolds-keep.net - Let me know if you make anything with this
+https://bsky.app/profile/kobolds-keep.net - Let me know if you make anything with this, I'd love to see it and I might share it on my socials.
 
 # LICENSE
 
