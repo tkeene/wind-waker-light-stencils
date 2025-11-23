@@ -1,0 +1,75 @@
+[gd_scene load_steps=7 format=3 uid="uid://tymmik7ftx1i"]
+
+[ext_resource type="Script" uid="uid://bjgvggrcyl5fw" path="res://_koboldskeep/wind_waker_light_stencils/scripts/ordered_materials.gd" id="1_m5kpn"]
+[ext_resource type="Material" uid="uid://7w4wd5uvudha" path="res://_koboldskeep/wind_waker_light_stencils/materials/stencil_mask_mat.tres" id="2_7n7ve"]
+[ext_resource type="Material" uid="uid://br0kihuchldcg" path="res://_koboldskeep/wind_waker_light_stencils/materials/shadow_mat.tres" id="3_f6075"]
+
+[sub_resource type="GDScript" id="GDScript_cjbkw"]
+script/source = "extends RayCast3D
+
+@onready var shadow_root:Node3D = $ShadowRoot
+@onready var inner_shadow:OrderedMaterials = $ShadowRoot/SmallInnerShadow
+@export var inner_shadow_radius := 0.8
+@onready var outer_shadow:OrderedMaterials = $ShadowRoot/LargeOuterShadow
+@export var outer_shadow_radius := 1.0
+
+func _ready() -> void:
+	inner_shadow.inside_radius = inner_shadow_radius
+	for child:Node3D in inner_shadow.get_children():
+		child.scale = Vector3.ONE * inner_shadow_radius
+	outer_shadow.inside_radius = outer_shadow_radius
+	for child:Node3D in outer_shadow.get_children():
+		child.scale = Vector3.ONE * outer_shadow_radius
+
+func _process(_delta: float) -> void:
+	if is_colliding():
+		visible = true
+		shadow_root.global_position = get_collision_point()
+	else:
+		visible = false
+		
+"
+
+[sub_resource type="SphereMesh" id="SphereMesh_m5kpn"]
+material = ExtResource("2_7n7ve")
+radial_segments = 9
+rings = 9
+
+[sub_resource type="SphereMesh" id="SphereMesh_ou8nk"]
+material = ExtResource("3_f6075")
+radial_segments = 9
+rings = 9
+
+[node name="ShadowCaster" type="RayCast3D"]
+target_position = Vector3(0, -10, 0)
+script = SubResource("GDScript_cjbkw")
+inner_shadow_radius = 0.4
+outer_shadow_radius = 0.7
+
+[node name="ShadowRoot" type="Node3D" parent="."]
+
+[node name="SmallInnerShadow" type="Node3D" parent="ShadowRoot" node_paths=PackedStringArray("camera_outside_renderer")]
+script = ExtResource("1_m5kpn")
+camera_outside_renderer = NodePath("OutsideRenderer")
+rotate_speed_radians_per_second = 0.0
+
+[node name="OutsideRenderer" type="Node3D" parent="ShadowRoot/SmallInnerShadow"]
+
+[node name="StencilRenderer" type="MeshInstance3D" parent="ShadowRoot/SmallInnerShadow/OutsideRenderer"]
+mesh = SubResource("SphereMesh_m5kpn")
+
+[node name="ShadowRenderer" type="MeshInstance3D" parent="ShadowRoot/SmallInnerShadow/OutsideRenderer"]
+mesh = SubResource("SphereMesh_ou8nk")
+
+[node name="LargeOuterShadow" type="Node3D" parent="ShadowRoot" node_paths=PackedStringArray("camera_outside_renderer")]
+script = ExtResource("1_m5kpn")
+camera_outside_renderer = NodePath("OutsideRenderer")
+rotate_speed_radians_per_second = 0.0
+
+[node name="OutsideRenderer" type="Node3D" parent="ShadowRoot/LargeOuterShadow"]
+
+[node name="StencilRenderer" type="MeshInstance3D" parent="ShadowRoot/LargeOuterShadow/OutsideRenderer"]
+mesh = SubResource("SphereMesh_m5kpn")
+
+[node name="ShadowRenderer" type="MeshInstance3D" parent="ShadowRoot/LargeOuterShadow/OutsideRenderer"]
+mesh = SubResource("SphereMesh_ou8nk")

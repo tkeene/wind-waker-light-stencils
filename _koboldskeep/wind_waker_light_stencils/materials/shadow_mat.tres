@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://br0kihuchldcg"]
+
+[resource]
+transparency = 1
+blend_mode = 2
+cull_mode = 1
+depth_test = 1
+shading_mode = 0
+albedo_color = Color(0.6862745, 0.49019608, 0.78431374, 0.11764706)
+stencil_mode = 3
+stencil_flags = 1
+stencil_compare = 2
+stencil_reference = 2

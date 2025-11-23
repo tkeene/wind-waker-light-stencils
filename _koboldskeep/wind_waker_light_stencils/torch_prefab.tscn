@@ -1,0 +1,154 @@
+[gd_scene load_steps=19 format=3 uid="uid://b7ktssodqmebt"]
+
+[ext_resource type="Texture2D" uid="uid://c8x7233vthwj4" path="res://_koboldskeep/wind_waker_light_stencils/textures/ember_sprite.png" id="1_2yvg4"]
+[ext_resource type="Script" uid="uid://bjgvggrcyl5fw" path="res://_koboldskeep/wind_waker_light_stencils/scripts/ordered_materials.gd" id="1_54rq7"]
+[ext_resource type="Material" uid="uid://7w4wd5uvudha" path="res://_koboldskeep/wind_waker_light_stencils/materials/stencil_mask_mat.tres" id="2_dkra5"]
+[ext_resource type="Material" uid="uid://c5rgw4tjbcksd" path="res://_koboldskeep/wind_waker_light_stencils/materials/torchlight_bright_mat.tres" id="3_ssopk"]
+[ext_resource type="Material" uid="uid://csk1ttb4odoco" path="res://_koboldskeep/wind_waker_light_stencils/materials/torchlight_camerainside_mat.tres" id="4_btyxr"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h1gvn"]
+shading_mode = 0
+albedo_color = Color(0.38, 0.24307333, 0.20519999, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_400w0"]
+material = SubResource("StandardMaterial3D_h1gvn")
+top_radius = 0.05
+bottom_radius = 0.3
+height = 1.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_400w0"]
+shading_mode = 0
+albedo_color = Color(1, 0.685, 0.3, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_byrqb"]
+material = SubResource("StandardMaterial3D_400w0")
+radius = 0.1
+height = 0.5
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_tqr3j"]
+emission_shape = 1
+emission_sphere_radius = 0.2
+gravity = Vector3(0, 3, 0)
+turbulence_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tqr3j"]
+render_priority = 1
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.24705882, 0, 1)
+albedo_texture = ExtResource("1_2yvg4")
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_2yvg4"]
+material = SubResource("StandardMaterial3D_tqr3j")
+size = Vector2(0.2, 0.2)
+
+[sub_resource type="SphereMesh" id="SphereMesh_vn4o0"]
+material = ExtResource("2_dkra5")
+radius = 3.0
+height = 6.0
+radial_segments = 9
+rings = 9
+
+[sub_resource type="SphereMesh" id="SphereMesh_ir3ir"]
+material = ExtResource("3_ssopk")
+radius = 3.0
+height = 6.0
+radial_segments = 9
+rings = 9
+
+[sub_resource type="SphereMesh" id="SphereMesh_khbwi"]
+material = ExtResource("4_btyxr")
+radius = 3.0
+height = 6.0
+radial_segments = 9
+rings = 9
+
+[sub_resource type="SphereMesh" id="SphereMesh_dkra5"]
+material = ExtResource("2_dkra5")
+radius = 3.5
+height = 7.0
+radial_segments = 9
+rings = 9
+
+[sub_resource type="SphereMesh" id="SphereMesh_ssopk"]
+material = ExtResource("3_ssopk")
+radius = 3.5
+height = 7.0
+radial_segments = 9
+rings = 9
+
+[sub_resource type="SphereMesh" id="SphereMesh_54rq7"]
+material = ExtResource("4_btyxr")
+radius = 3.5
+height = 7.0
+radial_segments = 9
+rings = 9
+
+[node name="Torch" type="Node3D"]
+
+[node name="TorchGeometry" type="Node3D" parent="."]
+
+[node name="Stand" type="MeshInstance3D" parent="TorchGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("CylinderMesh_400w0")
+
+[node name="Light" type="MeshInstance3D" parent="TorchGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+mesh = SubResource("SphereMesh_byrqb")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="TorchGeometry/Light"]
+explosiveness = 0.2
+randomness = 0.1
+use_fixed_seed = true
+seed = 2300763482
+process_material = SubResource("ParticleProcessMaterial_tqr3j")
+draw_pass_1 = SubResource("QuadMesh_2yvg4")
+
+[node name="LightPool" type="Node3D" parent="."]
+
+[node name="OrderedMaterials_StrongLight" type="Node3D" parent="LightPool" node_paths=PackedStringArray("camera_outside_renderer", "camera_inside_renderer")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+script = ExtResource("1_54rq7")
+inside_radius = 3.0
+camera_outside_renderer = NodePath("CameraOutside")
+camera_inside_renderer = NodePath("CameraInside")
+rotate_speed_radians_per_second = 0.6
+
+[node name="CameraOutside" type="Node3D" parent="LightPool/OrderedMaterials_StrongLight"]
+
+[node name="ExteriorMask" type="MeshInstance3D" parent="LightPool/OrderedMaterials_StrongLight/CameraOutside"]
+mesh = SubResource("SphereMesh_vn4o0")
+skeleton = NodePath("../..")
+
+[node name="ExteriorLight" type="MeshInstance3D" parent="LightPool/OrderedMaterials_StrongLight/CameraOutside"]
+mesh = SubResource("SphereMesh_ir3ir")
+skeleton = NodePath("../..")
+
+[node name="CameraInside" type="MeshInstance3D" parent="LightPool/OrderedMaterials_StrongLight"]
+visible = false
+mesh = SubResource("SphereMesh_khbwi")
+skeleton = NodePath("")
+
+[node name="OrderedMaterials_WeakLight" type="Node3D" parent="LightPool" node_paths=PackedStringArray("camera_outside_renderer", "camera_inside_renderer")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+script = ExtResource("1_54rq7")
+inside_radius = 3.5
+camera_outside_renderer = NodePath("CameraOutside")
+camera_inside_renderer = NodePath("CameraInside")
+rotate_speed_radians_per_second = 0.6
+
+[node name="CameraOutside" type="Node3D" parent="LightPool/OrderedMaterials_WeakLight"]
+
+[node name="ExteriorMask" type="MeshInstance3D" parent="LightPool/OrderedMaterials_WeakLight/CameraOutside"]
+mesh = SubResource("SphereMesh_dkra5")
+
+[node name="ExteriorLight" type="MeshInstance3D" parent="LightPool/OrderedMaterials_WeakLight/CameraOutside"]
+mesh = SubResource("SphereMesh_ssopk")
+
+[node name="CameraInside" type="MeshInstance3D" parent="LightPool/OrderedMaterials_WeakLight"]
+mesh = SubResource("SphereMesh_54rq7")

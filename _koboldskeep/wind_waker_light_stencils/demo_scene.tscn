@@ -1,0 +1,516 @@
+[gd_scene load_steps=27 format=3 uid="uid://c7oalo6rj5h52"]
+
+[ext_resource type="Texture2D" uid="uid://dglypjmpld60v" path="res://_koboldskeep/wind_waker_light_stencils/textures/block_tex.png" id="1_njult"]
+[ext_resource type="Script" uid="uid://ctjfdvsgvre2e" path="res://_koboldskeep/wind_waker_light_stencils/scripts/simple_character_controller.gd" id="2_gl6qx"]
+[ext_resource type="PackedScene" uid="uid://b7ktssodqmebt" path="res://_koboldskeep/wind_waker_light_stencils/torch_prefab.tscn" id="2_swo8q"]
+[ext_resource type="PackedScene" uid="uid://ddjma4u1hij40" path="res://_koboldskeep/wind_waker_light_stencils/bat_prefab.tscn" id="3_khbwi"]
+[ext_resource type="PackedScene" uid="uid://tymmik7ftx1i" path="res://_koboldskeep/wind_waker_light_stencils/shadow_caster_prefab.tscn" id="5_vn4o0"]
+[ext_resource type="Texture2D" uid="uid://bumdkcucdm3lt" path="res://_koboldskeep/wind_waker_light_stencils/textures/reference_target.jpg" id="6_xbw8k"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bnwkm"]
+shading_mode = 0
+albedo_texture = ExtResource("1_njult")
+uv1_offset = Vector3(0.5, 0, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_h1gvn"]
+material = SubResource("StandardMaterial3D_bnwkm")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gl6qx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vn4o0"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bnwkm"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_swo8q"]
+shading_mode = 0
+diffuse_mode = 3
+albedo_color = Color(0.081, 0.45, 0.21015005, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_bnwkm"]
+material = SubResource("StandardMaterial3D_swo8q")
+
+[sub_resource type="GDScript" id="GDScript_gl6qx"]
+script/source = "extends Node3D
+
+var setting_format:String = \"[font_size=60][color=green]%d\"
+@onready var button_prompts:RichTextLabel = $RichTextLabel
+@onready var current_setting:RichTextLabel = $RichTextLabel2
+@onready var fps_counter:RichTextLabel = $RichTextLabel3
+@export var demo_spheres:Node3D
+var f1_down_last_frame := false
+var f2_down_last_frame := false
+var previous_frames:Array[float] = []
+#var previous_reset_stencils_value := true
+
+func _process(delta: float) -> void:
+	#var reset_stencils_value = previous_reset_stencils_value
+	if Input.is_key_pressed(KEY_1):
+		#reset_stencils_value = false
+		OrderedMaterials.INTERIORS_ONLY = true
+		current_setting.text = setting_format % 1
+	elif Input.is_key_pressed(KEY_2):
+		#reset_stencils_value = false
+		OrderedMaterials.INTERIORS_ONLY = false
+		OrderedMaterials.ZERO_OFFSET = true
+		current_setting.text = setting_format % 2
+	elif Input.is_key_pressed(KEY_3):
+		#reset_stencils_value = false
+		OrderedMaterials.INTERIORS_ONLY = false
+		OrderedMaterials.ZERO_OFFSET = false
+		OrderedMaterials.VERTICAL_OFFSET = true
+		current_setting.text = setting_format % 3
+	elif Input.is_key_pressed(KEY_4):
+		#reset_stencils_value = false
+		OrderedMaterials.INTERIORS_ONLY = false
+		OrderedMaterials.ZERO_OFFSET = false
+		OrderedMaterials.VERTICAL_OFFSET = false
+		OrderedMaterials.STAGGER_RENDERERS = true
+		OrderedMaterials.ENSURE_DISTINCT_BANDS = false
+		current_setting.text = setting_format % 4
+	elif Input.is_key_pressed(KEY_5):
+		#reset_stencils_value = false
+		OrderedMaterials.INTERIORS_ONLY = false
+		OrderedMaterials.ZERO_OFFSET = false
+		OrderedMaterials.VERTICAL_OFFSET = false
+		OrderedMaterials.STAGGER_RENDERERS = true
+		OrderedMaterials.ENSURE_DISTINCT_BANDS = true
+		current_setting.text = setting_format % 5
+	#elif Input.is_key_pressed(KEY_6):
+		#reset_stencils_value = true
+		#OrderedMaterials.INTERIORS_ONLY = false
+		#OrderedMaterials.ZERO_OFFSET = false
+		#OrderedMaterials.VERTICAL_OFFSET = false
+		#OrderedMaterials.STAGGER_RENDERERS = true
+		#OrderedMaterials.ENSURE_DISTINCT_BANDS = true
+		#current_setting.text = setting_format % 6
+	
+	#if reset_stencils_value != previous_reset_stencils_value:
+		#previous_reset_stencils_value = reset_stencils_value
+		#for next:Node3D in get_parent_node_3d().find_children(\"ResetStencil\"):
+			#next.visible = reset_stencils_value
+	
+	var f1_this_frame := Input.is_key_pressed(KEY_F1)
+	var f2_this_frame := Input.is_key_pressed(KEY_F2)
+	if f1_this_frame and not f1_down_last_frame:
+		var toggle_to := not button_prompts.visible
+		button_prompts.visible = toggle_to
+		current_setting.visible = toggle_to
+	if f2_this_frame and not f2_down_last_frame:
+		demo_spheres.visible = not demo_spheres.visible
+	f1_down_last_frame = f1_this_frame
+	f2_down_last_frame = f2_this_frame
+	
+	previous_frames.append(delta)
+	if previous_frames.size() > 60:
+		previous_frames.remove_at(0)
+	var worst_frame := 0.0
+	var total := 0.0
+	for frame in previous_frames:
+		total += frame
+		if frame > worst_frame:
+			worst_frame = frame
+	var worst := 1.0 / worst_frame
+	var average := 1.0 / (total / previous_frames.size())
+	fps_counter.text = \"Average FPS: %.1f - Worst: %.1f\" % [average, worst]
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gl6qx"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.5019608)
+
+[sub_resource type="SphereMesh" id="SphereMesh_gl6qx"]
+material = SubResource("StandardMaterial3D_gl6qx")
+radius = 2.0
+height = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_khbwi"]
+transparency = 1
+cull_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.5019608)
+
+[sub_resource type="SphereMesh" id="SphereMesh_khbwi"]
+material = SubResource("StandardMaterial3D_khbwi")
+radius = 2.0
+height = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vn4o0"]
+transparency = 1
+cull_mode = 1
+depth_test = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.5019608)
+
+[sub_resource type="SphereMesh" id="SphereMesh_vn4o0"]
+material = SubResource("StandardMaterial3D_vn4o0")
+radius = 2.0
+height = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvu6i"]
+render_priority = 16
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.2509804)
+stencil_mode = 3
+stencil_flags = 2
+stencil_reference = 2
+
+[sub_resource type="SphereMesh" id="SphereMesh_vvu6i"]
+material = SubResource("StandardMaterial3D_vvu6i")
+radius = 2.0
+height = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ir3ir"]
+render_priority = 17
+transparency = 1
+no_depth_test = true
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.5019608)
+stencil_mode = 3
+stencil_flags = 1
+stencil_compare = 2
+stencil_reference = 2
+
+[sub_resource type="SphereMesh" id="SphereMesh_ir3ir"]
+material = SubResource("StandardMaterial3D_ir3ir")
+radius = 1.0
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_htrsu"]
+albedo_texture = ExtResource("6_xbw8k")
+uv1_scale = Vector3(2.2, 2.2, 2.2)
+uv1_offset = Vector3(0.5, -0.05, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gwkvl"]
+material = SubResource("StandardMaterial3D_htrsu")
+size = Vector3(0.1, 6, 8)
+
+[node name="DemoScene" type="Node3D"]
+
+[node name="LevelGeometry" type="Node3D" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(21, 0, 0, 0, 1, 0, 0, 0, 21, 0, -0.5, 0)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Floor/StaticBody3D"]
+shape = SubResource("BoxShape3D_gl6qx")
+
+[node name="Floor3" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(21, 0, 0, 0, 1, 0, 0, 0, 21, 0, -0.5, -21)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Floor3"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Floor3/StaticBody3D"]
+shape = SubResource("BoxShape3D_gl6qx")
+
+[node name="Block" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, -3)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block2" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 3)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block3" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, -3)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block4" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 3)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block9" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 9)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block10" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 9)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block11" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 12)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block12" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 12)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Wall" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 9, -6, 0.5, 0)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall2" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(11, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0.5, -7)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall2/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall13" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(21, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0.5, -31)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Wall6" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(11, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0.5, 7)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall6"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall6/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall3" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 9, 6, 0.5, 0)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall3"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall3/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall4" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 7, 0, 0, 0, 21, 10, 0.5, 0)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall4"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall4/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall5" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 7, 0, 0, 0, 21, -10, 0.5, 0)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall5"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall5/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Floor2" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(21, 0, 0, 0, 1, 0, 0, 0, 21, 0, -0.5, 21)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Floor2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Floor2/StaticBody3D"]
+shape = SubResource("BoxShape3D_gl6qx")
+
+[node name="Block5" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 18)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block6" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 24)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block7" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 18)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Block8" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 24)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="Wall7" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 9, -6, 0.5, 21)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall7"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall7/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall8" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(11, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0.5, 14)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall8"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall8/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall9" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(11, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0.5, 28)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall9"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall9/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall10" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 9, 6, 0.5, 21)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall10"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall10/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall11" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 7, 0, 0, 0, 21, 10, 0.5, 21)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall11"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall11/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Wall12" type="MeshInstance3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 7, 0, 0, 0, 21, -10, 0.5, 21)
+mesh = SubResource("BoxMesh_h1gvn")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="LevelGeometry/Wall12"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Wall12/StaticBody3D"]
+shape = SubResource("BoxShape3D_vn4o0")
+
+[node name="Torches" type="Node3D" parent="."]
+
+[node name="Torch" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -4)
+
+[node name="Torch2" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -4)
+
+[node name="Torch3" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 4)
+
+[node name="Torch4" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 4)
+
+[node name="Torch5" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 17)
+
+[node name="Torch6" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 17)
+
+[node name="Torch7" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 25)
+
+[node name="Torch8" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 25)
+
+[node name="Torch9" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 12)
+
+[node name="Torch10" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 9)
+
+[node name="Torch11" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 12)
+
+[node name="Torch12" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 9)
+
+[node name="Torch13" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 4, 21)
+
+[node name="Torch14" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 4, 21)
+
+[node name="Torch15" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 4, 0)
+
+[node name="Torch16" parent="Torches" instance=ExtResource("2_swo8q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 4, 0)
+
+[node name="Bats" type="Node3D" parent="."]
+
+[node name="Bat" parent="Bats" instance=ExtResource("3_khbwi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+
+[node name="Bat2" parent="Bats" instance=ExtResource("3_khbwi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 12)
+
+[node name="Bat3" parent="Bats" instance=ExtResource("3_khbwi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 21)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 4)
+script = ExtResource("2_gl6qx")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_bnwkm")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+mesh = SubResource("CapsuleMesh_bnwkm")
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 0.77812254, 0.62811244, 0, -0.62811244, 0.77812254, 0, 2, 2)
+
+[node name="ShadowCaster" parent="Player" instance=ExtResource("5_vn4o0")]
+
+[node name="GUI" type="Node3D" parent="." node_paths=PackedStringArray("demo_spheres")]
+script = SubResource("GDScript_gl6qx")
+demo_spheres = NodePath("../BabyStepsDemoSpheres")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="GUI"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 737.0
+offset_bottom = 256.0
+text = "WASD - Move
+Mouse - Rotate Camera
+1 - Inverted Depth Test (no stencil, renders through walls)
+2 - Stencil With Renderers All At Zero (lots of artifacts if you move the camera)
+3 - Stencil Stacked Vertically (lower camera to see artifacts
+4 - Sorting Away From Camera (light rings and perpindicular lights have artifacts)
+5 - Sorting With Banding (greatly reduced artifacts, low camera angle artifacts)
+F1 - Hide HUD
+F2 - Hide Demo Spheres"
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="GUI"]
+offset_left = 12.0
+offset_top = 237.0
+offset_right = 737.0
+offset_bottom = 462.0
+bbcode_enabled = true
+text = "[font_size=60][color=green]5"
+
+[node name="RichTextLabel3" type="RichTextLabel" parent="GUI"]
+offset_left = 364.0
+offset_top = 12.0
+offset_right = 737.0
+offset_bottom = 39.0
+text = "FPS: -"
+
+[node name="BabyStepsDemoSpheres" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, -29.583559)
+
+[node name="DefaultMaterial" type="MeshInstance3D" parent="BabyStepsDemoSpheres"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 0)
+mesh = SubResource("SphereMesh_gl6qx")
+
+[node name="InvertedNormals" type="MeshInstance3D" parent="BabyStepsDemoSpheres"]
+mesh = SubResource("SphereMesh_khbwi")
+
+[node name="InvertedDepthTest" type="MeshInstance3D" parent="BabyStepsDemoSpheres"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+mesh = SubResource("SphereMesh_vn4o0")
+
+[node name="StencilMask" type="MeshInstance3D" parent="BabyStepsDemoSpheres"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 5)
+mesh = SubResource("SphereMesh_vvu6i")
+
+[node name="StencilRenderer" type="MeshInstance3D" parent="BabyStepsDemoSpheres"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 5)
+mesh = SubResource("SphereMesh_ir3ir")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.468875, 3.0146918, -22.536913)
+mesh = SubResource("BoxMesh_gwkvl")

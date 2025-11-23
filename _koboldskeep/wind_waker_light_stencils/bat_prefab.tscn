@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://ddjma4u1hij40"]
+
+[ext_resource type="PackedScene" uid="uid://tymmik7ftx1i" path="res://_koboldskeep/wind_waker_light_stencils/shadow_caster_prefab.tscn" id="1_s4rks"]
+[ext_resource type="Script" uid="uid://cu5k4l4an2trr" path="res://_koboldskeep/wind_waker_light_stencils/scripts/flying_bat.tres.gd" id="1_wgv42"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rybc3"]
+shading_mode = 0
+albedo_color = Color(0.41454002, 0.2709, 0.63, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_s4rks"]
+material = SubResource("StandardMaterial3D_rybc3")
+
+[node name="Bat" type="Node3D"]
+script = ExtResource("1_wgv42")
+cycle_time = 10.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_s4rks")
+
+[node name="ShadowCaster" parent="." instance=ExtResource("1_s4rks")]
+inner_shadow_radius = 0.7
