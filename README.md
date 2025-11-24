@@ -6,9 +6,9 @@ by Thomas Keene at Kobold's Keep Videogames
 
 tkeene@kobolds-keep.net
 
-https://bsky.app/profile/kobolds-keep.net - Let me know if you make anything with this, I'd love to see it and I might share it on my socials.
+https://bsky.app/profile/kobolds-keep.net - Please let me know if you make anything with this, I'd love to see it and I might share it on my socials.
 
-No AI or LLM was used to create this project.
+No AI or LLM tools were used to create this project.
 
 # LICENSE
 
@@ -32,7 +32,7 @@ https://koboldskeep.itch.io/wind-waker-lights-demo - Playable demo here
 
 This project is an attempt to recreate the polygonal lights of The Legend of Zelda: The Wind Waker using Godot Engine. I'm happy that I've been able to achieve this without any shader code or shader graph, just the standard material. It is not as clean as Wind Waker's approach, which uses manually ordered draw calls, but Godot Engine does not support this and the developers have indicated a disinterest in adding the feature because it can hurt GPU performance.
 
-I have also given the lights inner and outer rings and added simple spot shadows to the player capsule, and some flying "bat" spheres that move around the level to demonstrate the shadow feature.
+I have also given the lights inner and outer rings (something Wind Waker only does on lanterns) and added simple spot shadows to the player capsule. There are some flying "bat" spheres that move around the level to demonstrate the shadow feature.
 
 There are a large number of debug features to see how each of the rendering steps work. The keyboard shortcuts to access them are displayed on-screen when the demo is run. The script that draws these is in on a node in demo_scene.tscn at /DemoScene/GUI
 
@@ -62,6 +62,6 @@ There are two minor artifacts in this version:
 
 Both of these stem from the stencil mask of one OrderedMaterial object drawing on the stencil buffer, which is later read by a different OrderedMaterial object's renderers. Any part of the renderer outside its mask may still draw, which is the case in both of the above screenshots.
 
-I tried resolving this by giving each torch another material that clears the stencil buffer, but my solutions only added more rendering artifacts and glitches. I leave it to wiser engineers to find fixes for these issues.
+I tried resolving this by giving each torch another material that clears the stencil buffer, but my solutions only added more rendering artifacts and glitches. I decided it wasn't worth delaying release another week to debug. I leave it to wiser engineers to find fixes for these issues.
 
 Please let me know what you come up with, I'd love to hear from you.
